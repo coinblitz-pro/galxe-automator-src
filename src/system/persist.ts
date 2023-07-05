@@ -7,6 +7,7 @@ import { ethers } from 'ethers'
 export let WALLETS: ethers.Wallet[] = []
 export let PROXIES: string[] = []
 export let TWO_CAPTCHA_TOKEN: string
+export let LICENSE: string
 
 export function loadFile(file: string) {
   return existsSync(file) ? readFileSync(file).toString().split('\n').filter(r => r).map(row => row.trim()) : []
@@ -24,13 +25,23 @@ export function load2captchaSync() {
   TWO_CAPTCHA_TOKEN = loadFile('2captcha.txt')[0]
 }
 
+export function loadLicenseSync() {
+  LICENSE = loadFile('license.txt')[0]
+}
+
 export function saveProxiesSync(rows: string[]) {
   PROXIES = rows
   writeFileSync(`proxies.txt`, rows.join('\n'))
 }
 
 export function save2CaptchaSync(key: string) {
+  TWO_CAPTCHA_TOKEN = key
   writeFileSync(`2captcha.txt`, key)
+}
+
+export function saveLicenseSync(license: string) {
+  LICENSE = license
+  writeFileSync(`license.txt`, license)
 }
 
 export function saveKeysSync(rows: string[]) {

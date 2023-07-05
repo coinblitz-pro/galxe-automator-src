@@ -6,9 +6,10 @@ import { addProxy } from './actions/add-proxy'
 import { addKeys } from './actions/add-wallets'
 import { add2captcha } from './actions/add-2captcha'
 import { makeFirewallScript } from './actions/make-firewall-script'
+import { addLicense } from './actions/add-license'
 
-export async function main() {
-  bootstrap()
+export async function cli() {
+  await bootstrap()
 
   const { action } = await prompt([ {
     type: 'list', name: 'action', message: 'Что делаем?', choices: [
@@ -18,6 +19,7 @@ export async function main() {
       'Добавить кошельки',
       'Добавить 2captcha',
       'Настроить фаервол',
+      'Добавить ключ',
       'Выход'
     ]
   } ])
@@ -47,11 +49,15 @@ export async function main() {
     await makeFirewallScript()
   }
 
+  if (action === 'Добавить ключ') {
+    await addLicense()
+  }
+
   if (action === 'Выход') {
     process.exit()
   }
 
-  await main()
+  await cli()
 }
 
 async function getQuantity() {

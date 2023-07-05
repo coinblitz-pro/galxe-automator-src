@@ -1,13 +1,17 @@
 import axios from 'axios'
 import { saveLinksSync, WALLETS } from '../system/persist'
 import { LinkData } from '../system/types'
-import { getProxyAgent, randomString, saveError } from '../system/utils'
+import { checkLicense, getProxyAgent, randomString, saveError } from '../system/utils'
 import qs from 'qs'
 import chalk from 'chalk'
 import { ethers } from 'ethers'
 import { bypass } from '../system/bypass'
 
 export async function getLinks(threads: number) {
+  if (await checkLicense() === false) {
+    return
+  }
+
   console.log(`\nGetting links for ${WALLETS.length} wallets...\n`)
 
   const links: LinkData[] = []
@@ -59,7 +63,7 @@ export async function getLinks(threads: number) {
 
       console.log(`${chalk.bold(address)} ${chalk.cyan(link)}`)
     } catch (e) {
-      console.log(`${chalk.bold(address)} ${e.message}`)
+      console.log(`${chalk.bold(address)} ERROR: ${e.message}`)
       saveError(e)
     }
   })

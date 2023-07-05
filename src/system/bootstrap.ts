@@ -1,16 +1,12 @@
-import { load2captchaSync, loadProxiesSync, loadWalletsSync, TWO_CAPTCHA_TOKEN, WALLETS } from './persist'
+import { load2captchaSync, loadLicenseSync, loadProxiesSync, loadWalletsSync } from './persist'
 import { existsSync, mkdirSync } from 'fs'
 
 
-export function bootstrap() {
+export async function bootstrap() {
   loadWalletsSync()
   loadProxiesSync()
   load2captchaSync()
-
-  if (WALLETS.length === 0) {
-    console.log('Не найдены приватные ключи кошельков в файле keys.txt')
-    process.exit(1)
-  }
+  loadLicenseSync()
 
   if (existsSync('output') === false) {
     mkdirSync('output')

@@ -3,17 +3,15 @@ import { ethers } from 'ethers'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { savePassportsSync, TWO_CAPTCHA_TOKEN, WALLETS } from '../system/persist'
 import axios from 'axios'
-import { getProxyAgent, randomString, saveError, sleep } from '../system/utils'
+import { checkLicense, getProxyAgent, randomString, saveError, sleep } from '../system/utils'
 import chalk from 'chalk'
 import { PassportData } from '../system/types'
 import crypto from 'crypto'
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils'
 import { solveGeetestCaptcha } from '../system/2captcha'
-import { add2captcha } from './add-2captcha'
 
 export async function mint(threads: number) {
-  if (!TWO_CAPTCHA_TOKEN) {
-    await add2captcha()
+  if (await checkLicense() === false) {
     return
   }
 
@@ -131,7 +129,7 @@ export async function mint(threads: number) {
       savePassportsSync(passports)
       console.log(`${chalk.bold(address)} Passport has been successfully minted by https://bscscan.com/tx/${receipt.hash}`)
     } catch (e) {
-      console.log(`${chalk.bold(address)} ${e.message}`)
+      console.log(`${chalk.bold(address)} ERROR: ${e.message}`)
       passports.push({ address, password, status: 'ERR' })
       savePassportsSync(passports)
       saveError(e)
@@ -190,11 +188,13 @@ export type GalxePrepareParticipateResponse = {
 }
 
 async function getCaptcha() {
-  const solvation = await solveGeetestCaptcha('244bcb8b9846215df5af4c624a750db4', `https://galxe.com/passport?step=toMint`)
-  return {
-    lotNumber: solvation.lot_number,
-    captchaOutput: solvation.captcha_output,
-    passToken: solvation.pass_token,
-    genTime: solvation.gen_time,
+  if (TWO_CAPTCHA_TOKEN) {
+    const solvation = await solveGeetestCaptcha('244bcb8b9846215df5af4c624a750db4', `https://galxe.com/passport?step=toMint`)
+    return {
+      lotNumber: solvation.lot_number,
+      captchaOutput: solvation.captcha_output,
+      passToken: solvation.pass_token,
+      genTime: solvation.gen_time,
+    }
   }
 }

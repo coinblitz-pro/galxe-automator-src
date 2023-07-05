@@ -1,8 +1,11 @@
 import moize from 'moize'
 import { HttpsProxyAgent } from 'https-proxy-agent'
-import { PROXIES } from './persist'
+import { LICENSE, PROXIES } from './persist'
 import { appendFileSync } from 'fs'
 import dayjs from 'dayjs'
+import si from 'systeminformation'
+import axios from 'axios'
+import chalk from 'chalk'
 
 export const getSpinner = () => {
   const chars = [ '⠙', '⠘', '⠰', '⠴', '⠤', '⠦', '⠆', '⠃', '⠋', '⠉' ]
@@ -60,4 +63,19 @@ export function randomString(length: number, characters = 'ABCDEFGHIJKLMNOPQRSTU
 
 export function saveError(error: any) {
   appendFileSync('./errors.txt', `[${dayjs().format('DD.MM.YYYY hh:mm.ss.SSS')}]\n${JSON.stringify(error.error ?? error, null, 2)}\n`)
+}
+
+export async function checkLicense() {
+  const { uuid } = await si.system()
+  try {
+    const url = 'https://inspector.coinblitz.pro/galxe-automator'
+    const { data: { legitimate } } = await axios.post<{ legitimate: boolean }>(url, { uuid, key: LICENSE }, { timeout: 10000 })
+    if (legitimate === false) {
+      console.log('\nЛицензия не валидна\n')
+    }
+    return legitimate
+  } catch (e) {
+    console.log(chalk.red('\nЧто-то пошло не так при проверке лицензии\n'))
+    return false
+  }
 }
