@@ -1,0 +1,27 @@
+{
+  "private": true,
+  "version": "1.0.0",
+  "author": "Ivan Lagunovsky <ivan.lagunovsky@gmail.com>",
+  "scripts": {
+    "start": "ts-node index.ts",
+    "transpile": "tsc",
+    "compile": "pkg dist/index.js --output bin/galxe-automator --compress -t node16-linux-x64,node16-linux-arm64,node16-win-x64,node16-win-arm64,node16-mac-x64,node16-mac-arm64"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "chalk": "^4.1.2",
+    "dayjs": "^1.11.9",
+    "ethers": "^5.7.2",
+    "gradient-string": "^2.0.2",
+    "https-proxy-agent": "^7.0.0",
+    "inquirer": "^8.2.5",
+    "moize": "^6.1.6",
+    "qs": "^6.11.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.3.3",
+    "pkg": "^5.8.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
+  }
+}

@@ -1,0 +1,7 @@
+node_modules
+dist
+bin
+output
+keys.txt
+proxies.txt
+2captcha.txt
