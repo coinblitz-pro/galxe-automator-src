@@ -42,7 +42,7 @@ export const getProxyAgent = moize((i: number) => {
 }, { maxSize: 200 })
 
 export const sleep = async (time: number) => {
-  const spinner = time > 1 ? getSpinner() : null
+  const spinner = time > 5 ? getSpinner() : null
   const timeout = new Promise(resolve => setTimeout(resolve, time * 1000))
   spinner?.start(`sleep for ${time}s`)
   await timeout

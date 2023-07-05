@@ -19,7 +19,7 @@ export async function cli() {
       'Добавить кошельки',
       'Добавить 2captcha',
       'Настроить фаервол',
-      'Добавить ключ',
+      'Добавить лицензию',
       'Выход'
     ]
   } ])
@@ -49,7 +49,7 @@ export async function cli() {
     await makeFirewallScript()
   }
 
-  if (action === 'Добавить ключ') {
+  if (action === 'Добавить лицензию') {
     await addLicense()
   }
 
