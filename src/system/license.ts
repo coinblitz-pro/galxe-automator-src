@@ -11,6 +11,7 @@ export const sign = (input, privateKey) => {
 }
 
 export function verify(signature, data) {
+  if (!signature) return false
   const verify = crypto.createVerify('RSA-SHA256')
   verify.update(data, 'utf-8')
   return verify.verify(PUBLIC_KEY, signature, 'hex')
