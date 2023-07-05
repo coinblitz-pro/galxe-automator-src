@@ -1,7 +1,7 @@
 {
   "name": "galxe-automator",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "Ivan Lagunovsky <ivan.lagunovsky@gmail.com>",
   "bin": "./dist/bundle.js",
   "scripts": {
@@ -9,9 +9,11 @@
     "transpile": "tsc",
     "bundle": "esbuild dist/index.js --bundle --minify --outfile=dist/bundle.js --format=cjs --platform=node",
     "package": "pkg package.json",
-    "build": "rm -rf bin && npm run transpile && npm run bundle && npm run package && ts-node postbuild.ts && rm -rf dist"
+    "build": "rm -rf bin && npm run transpile && npm run bundle && npm run package && ts-node utils/postbuild.ts && rm -rf dist",
+    "sign": "ts-node utils/sign.ts"
   },
   "devDependencies": {
+    "@types/md5": "^2.3.2",
     "@types/node": "^20.3.3",
     "@types/tar": "^6.1.5",
     "axios": "^1.4.0",
@@ -22,6 +24,7 @@
     "gradient-string": "^2.0.2",
     "https-proxy-agent": "^7.0.0",
     "inquirer": "^8.2.5",
+    "md5": "^2.3.0",
     "moize": "^6.1.6",
     "pkg": "^5.8.1",
     "qs": "^6.11.2",

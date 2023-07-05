@@ -12,7 +12,11 @@ export async function cli() {
   await bootstrap()
 
   const { action } = await prompt([ {
-    type: 'list', name: 'action', message: 'Что делаем?', choices: [
+    type: 'list',
+    name: 'action',
+    message: 'Что делаем?',
+    pageSize: 8,
+    choices: [
       'Получить ссылки на KYC',
       'Mint паспорта',
       'Добавить прокси',
@@ -21,9 +25,8 @@ export async function cli() {
       'Настроить фаервол',
       'Добавить лицензию',
       'Выход'
-    ]
+    ],
   } ])
-
 
   if (action === 'Получить ссылки на KYC') {
     await getLinks(await getQuantity())

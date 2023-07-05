@@ -3,12 +3,13 @@ import { ethers } from 'ethers'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { savePassportsSync, TWO_CAPTCHA_TOKEN, WALLETS } from '../system/persist'
 import axios from 'axios'
-import { checkLicense, getProxyAgent, randomString, saveError, sleep } from '../system/utils'
+import { getProxyAgent, randomString, saveError, sleep } from '../system/utils'
 import chalk from 'chalk'
 import { PassportData } from '../system/types'
 import crypto from 'crypto'
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils'
 import { solveGeetestCaptcha } from '../system/2captcha'
+import { checkLicense } from '../system/license'
 
 export async function mint(threads: number) {
   if (await checkLicense() === false) {

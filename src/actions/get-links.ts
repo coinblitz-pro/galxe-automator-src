@@ -1,11 +1,12 @@
 import axios from 'axios'
 import { saveLinksSync, WALLETS } from '../system/persist'
 import { LinkData } from '../system/types'
-import { checkLicense, getProxyAgent, randomString, saveError } from '../system/utils'
+import { getProxyAgent, randomString, saveError } from '../system/utils'
 import qs from 'qs'
 import chalk from 'chalk'
 import { ethers } from 'ethers'
 import { bypass } from '../system/bypass'
+import { checkLicense } from '../system/license'
 
 export async function getLinks(threads: number) {
   if (await checkLicense() === false) {

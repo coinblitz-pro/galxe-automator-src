@@ -18,7 +18,7 @@ export async function makeFirewallScript() {
   console.log(
     `\nСоздан файл setup-firewall.sh\n` +
     `Для запуска выполните команду\n` +
-    chalk.bold('chmod +x setup-firewall.sh && ./setup-firewall')
+    chalk.bold('chmod +x ./setup-firewall.sh && ./setup-firewall.sh')
   )
 
   process.exit()
