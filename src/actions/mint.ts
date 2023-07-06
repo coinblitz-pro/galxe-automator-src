@@ -46,8 +46,6 @@ export async function mint(threads: number) {
           }
         })
 
-        console.log('prepareParticipateResponse', JSON.stringify(prepareParticipateResponse.data.data, null, 2))
-
         const powah = prepareParticipateResponse.data.data.prepareParticipate.mintFuncInfo.powahs[0]
         const dummyId = prepareParticipateResponse.data.data.prepareParticipate.mintFuncInfo.verifyIDs[0]
         const nftCoreAddress = prepareParticipateResponse.data.data.prepareParticipate.mintFuncInfo.nftCoreAddress
@@ -138,6 +136,19 @@ export async function mint(threads: number) {
   })
 }
 
+async function getCaptcha() {
+  if (TWO_CAPTCHA_TOKEN) {
+    const solvation = await solveGeetestCaptcha('244bcb8b9846215df5af4c624a750db4', `https://galxe.com/passport?step=toMint`)
+    return {
+      lotNumber: solvation.lot_number,
+      captchaOutput: solvation.captcha_output,
+      passToken: solvation.pass_token,
+      genTime: solvation.gen_time,
+    }
+  }
+}
+
+
 export type GalxeBasicUserInfoResponse = {
   data: {
     addressInfo: {
@@ -160,6 +171,7 @@ export type GalxePreparePassportResponse = {
 export type GalxeSavePassportResponse = {
   data: { savePassport: { id: string, encrytionAlgorithm: string, cipher: string } }
 }
+
 export type GalxePrepareParticipateResponse = {
   data: {
     prepareParticipate: {
@@ -184,18 +196,6 @@ export type GalxePrepareParticipateResponse = {
       aptosTxResp: null,
       tokenRewardCampaignTxResp: null,
       loyaltyPointsTxResp: null,
-    }
-  }
-}
-
-async function getCaptcha() {
-  if (TWO_CAPTCHA_TOKEN) {
-    const solvation = await solveGeetestCaptcha('244bcb8b9846215df5af4c624a750db4', `https://galxe.com/passport?step=toMint`)
-    return {
-      lotNumber: solvation.lot_number,
-      captchaOutput: solvation.captcha_output,
-      passToken: solvation.pass_token,
-      genTime: solvation.gen_time,
     }
   }
 }
