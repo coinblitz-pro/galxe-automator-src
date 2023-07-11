@@ -27,44 +27,36 @@ export async function mint(threads: number) {
     const password = randomString(14) + randomString(2, '~!@#$%^&*.=')
     const galaxy = axios.create({ baseURL: 'https://graphigo.prd.galaxy.eco/query', httpsAgent: getProxyAgent(index), method: 'POST' })
 
+    async function onchainMint() {
+      const prepareParticipateResponse = await galaxy<GalxePrepareParticipateResponse>({
+        data: {
+          operationName: 'PrepareParticipate',
+          variables: {
+            input: {
+              signature: '',
+              campaignID: 'GCfBiUt5ye',
+              address,
+              mintCount: 1,
+              chain: 'BSC',
+              captcha: await getCaptcha(),
+            }
+          },
+          query: 'mutation PrepareParticipate($input: PrepareParticipateInput!) {\n  prepareParticipate(input: $input) {\n    allow\n    disallowReason\n    signature\n    nonce\n    mintFuncInfo {\n      funcName\n      nftCoreAddress\n      verifyIDs\n      powahs\n      cap\n      __typename\n    }\n    extLinkResp {\n      success\n      data\n      error\n      __typename\n    }\n    metaTxResp {\n      metaSig2\n      autoTaskUrl\n      metaSpaceAddr\n      forwarderAddr\n      metaTxHash\n      reqQueueing\n      __typename\n    }\n    solanaTxResp {\n      mint\n      updateAuthority\n      explorerUrl\n      signedTx\n      verifyID\n      __typename\n    }\n    aptosTxResp {\n      signatureExpiredAt\n      tokenName\n      __typename\n    }\n    tokenRewardCampaignTxResp {\n      signatureExpiredAt\n      verifyID\n      __typename\n    }\n    loyaltyPointsTxResp {\n      TotalClaimedPoints\n      __typename\n    }\n    __typename\n  }\n}\n'
+        }
+      })
+
+      const powah = prepareParticipateResponse.data.data.prepareParticipate.mintFuncInfo.powahs[0]
+      const dummyId = prepareParticipateResponse.data.data.prepareParticipate.mintFuncInfo.verifyIDs[0]
+      const nftCoreAddress = prepareParticipateResponse.data.data.prepareParticipate.mintFuncInfo.nftCoreAddress
+      const signature = prepareParticipateResponse.data.data.prepareParticipate.signature
+
+      const tx: TransactionResponse = await contract.connect(wallet.connect(bsc)).claim(powah, nftCoreAddress, dummyId, powah, signature, { value: ethers.utils.parseEther('0.025') })
+      await tx.wait()
+
+      return tx
+    }
+
     try {
-      async function onchainMint() {
-        const prepareParticipateResponse = await galaxy<GalxePrepareParticipateResponse>({
-          data: {
-            operationName: 'PrepareParticipate',
-            variables: {
-              input: {
-                signature: '',
-                campaignID: 'GCfBiUt5ye',
-                address,
-                mintCount: 1,
-                chain: 'BSC',
-                captcha: await getCaptcha(),
-              }
-            },
-            query: 'mutation PrepareParticipate($input: PrepareParticipateInput!) {\n  prepareParticipate(input: $input) {\n    allow\n    disallowReason\n    signature\n    nonce\n    mintFuncInfo {\n      funcName\n      nftCoreAddress\n      verifyIDs\n      powahs\n      cap\n      __typename\n    }\n    extLinkResp {\n      success\n      data\n      error\n      __typename\n    }\n    metaTxResp {\n      metaSig2\n      autoTaskUrl\n      metaSpaceAddr\n      forwarderAddr\n      metaTxHash\n      reqQueueing\n      __typename\n    }\n    solanaTxResp {\n      mint\n      updateAuthority\n      explorerUrl\n      signedTx\n      verifyID\n      __typename\n    }\n    aptosTxResp {\n      signatureExpiredAt\n      tokenName\n      __typename\n    }\n    tokenRewardCampaignTxResp {\n      signatureExpiredAt\n      verifyID\n      __typename\n    }\n    loyaltyPointsTxResp {\n      TotalClaimedPoints\n      __typename\n    }\n    __typename\n  }\n}\n'
-          }
-        })
-
-        const powah = prepareParticipateResponse.data.data.prepareParticipate.mintFuncInfo.powahs[0]
-        const dummyId = prepareParticipateResponse.data.data.prepareParticipate.mintFuncInfo.verifyIDs[0]
-        const nftCoreAddress = prepareParticipateResponse.data.data.prepareParticipate.mintFuncInfo.nftCoreAddress
-        const signature = prepareParticipateResponse.data.data.prepareParticipate.signature
-
-        const tx: TransactionResponse = await contract.connect(wallet.connect(bsc)).claim(powah, nftCoreAddress, dummyId, powah, signature, { value: ethers.utils.parseEther('0.025') })
-        await tx.wait()
-
-        return tx
-      }
-
-      const balance = await bsc.getBalance(address)
-      if (balance.lt('26000000000000000')) {
-        passports.push({ address, status: 'Insufficient Balance' })
-        savePassportsSync(passports)
-        console.log(`${chalk.bold(address)} 'Insufficient Balance'`)
-        return
-      }
-
       const basicUserInfoResponse = await galaxy<GalxeBasicUserInfoResponse>({
         data: {
           operationName: 'BasicUserInfo',
@@ -74,19 +66,31 @@ export async function mint(threads: number) {
       })
 
       const { status } = basicUserInfoResponse.data.data.addressInfo.passport
+
       if (status === 'MINTED') {
-        console.log(`${chalk.bold(address)} already minted`)
         passports.push({ address, status: 'Already Minted' })
         savePassportsSync(passports)
+        console.log(`${chalk.bold(address)} Паспорт уже сминчен`)
         return
       } else if (status === 'ISSUED_NOT_MINTED') {
         const receipt = await onchainMint()
         passports.push({ address, password, status: 'Minted (without password)' })
         savePassportsSync(passports)
-        console.log(`${chalk.bold(address)} Passport has been successfully minted (without password) by https://bscscan.com/tx/${receipt.hash}`)
+        console.log(`${chalk.bold(address)} Паспорт успешно сминчен https://bscscan.com/tx/${receipt.hash}`)
         return
-      } else {
-        await sleep(5)
+      } else if (status === 'NOT_ISSUED'){
+        passports.push({ address, status: 'Not issued' })
+        savePassportsSync(passports)
+        console.log(`${chalk.bold(address)} KYC не пройден (или не запрашивался)`)
+        return
+      }
+
+      const balance = await bsc.getBalance(address)
+      if (balance.lt('26000000000000000')) {
+        passports.push({ address, status: 'Insufficient Balance' })
+        savePassportsSync(passports)
+        console.log(`${chalk.bold(address)} 'Недостаточный баланс, минимум 0.026BNB'`)
+        return
       }
 
       const preparePassportResponse = await galaxy<GalxePreparePassportResponse>({
@@ -126,7 +130,7 @@ export async function mint(threads: number) {
       const receipt = await onchainMint()
       passports.push({ address, password, status: 'Minted' })
       savePassportsSync(passports)
-      console.log(`${chalk.bold(address)} Passport has been successfully minted by https://bscscan.com/tx/${receipt.hash}`)
+      console.log(`${chalk.bold(address)} Паспорт успешно сминчен https://bscscan.com/tx/${receipt.hash}`)
     } catch (e) {
       console.log(`${chalk.bold(address)} ERROR: ${e.message}`)
       passports.push({ address, password, status: 'ERR' })
@@ -148,19 +152,19 @@ async function getCaptcha() {
   }
 }
 
-
 export type GalxeBasicUserInfoResponse = {
   data: {
     addressInfo: {
       id: string
       passport: {
-        status: 'MINTED' | 'PENDING_PREPARE' | 'ISSUED_NOT_MINTED'
+        status: 'MINTED' | 'PENDING_PREPARE' | 'ISSUED_NOT_MINTED' | 'NOT_ISSUED'
         pendingRedactAt: null
         id: string
       }
     }
   }
 }
+
 export type GalxePreparePassportResponse = {
   data: {
     preparePassport: {
@@ -168,6 +172,7 @@ export type GalxePreparePassportResponse = {
     }
   }
 }
+
 export type GalxeSavePassportResponse = {
   data: { savePassport: { id: string, encrytionAlgorithm: string, cipher: string } }
 }
