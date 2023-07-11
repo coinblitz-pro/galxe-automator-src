@@ -17,13 +17,10 @@ export async function cli() {
     message: 'Что делаем?',
     pageSize: 8,
     choices: [
-      'Получить ссылки на KYC',
+      'Ссылки на KYC',
       'Mint паспорта',
-      'Добавить прокси',
-      'Добавить кошельки',
-      'Добавить 2captcha',
-      'Настроить фаервол',
-      'Добавить лицензию',
+      'Настройки',
+      'Лицензия',
       'Выход'
     ],
   } ])
@@ -36,23 +33,40 @@ export async function cli() {
     await mint(await getQuantity())
   }
 
-  if (action === 'Добавить прокси') {
-    await addProxy()
+  if (action === 'Настройки') {
+    const { action } = await prompt([ {
+      type: 'list',
+      name: 'action',
+      message: 'Что делаем?',
+      pageSize: 8,
+      choices: [
+        'Прокси',
+        'Кошельки',
+        '2captcha',
+        'Фаервол',
+        'Назад'
+      ],
+    } ])
+
+    if (action === 'Прокси') {
+      await addProxy()
+    }
+
+    if (action === 'Кошельки') {
+      await addKeys()
+    }
+
+    if (action === '2captcha') {
+      await add2captcha()
+    }
+
+    if (action === 'Фаервол') {
+      await makeFirewallScript()
+    }
+
   }
 
-  if (action === 'Добавить кошельки') {
-    await addKeys()
-  }
-
-  if (action === 'Добавить 2captcha') {
-    await add2captcha()
-  }
-
-  if (action === 'Настроить фаервол') {
-    await makeFirewallScript()
-  }
-
-  if (action === 'Добавить лицензию') {
+  if (action === 'Лицензия') {
     await addLicense()
   }
 
