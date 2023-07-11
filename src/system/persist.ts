@@ -9,6 +9,8 @@ export let PROXIES: string[] = []
 export let TWO_CAPTCHA_TOKEN: string
 export let LICENSE: string
 
+const now = dayjs().format('DD.MM.YYYY hh:mm')
+
 export function loadFile(file: string) {
   return existsSync(file) ? readFileSync(file).toString().split('\n').filter(r => r).map(row => row.trim()) : []
 }
@@ -51,10 +53,10 @@ export function saveKeysSync(rows: string[]) {
 
 export function saveLinksSync(links: LinkData[]) {
   const rows = [ CSV_LINKS_HEADER.join(','), ...links.map(w => [ w.address, w.link ].join(',')) ]
-  writeFileSync(`output/links_[${dayjs().format('DD.MM.YYYY hh:mm.ss.SSS')}].csv`, rows.join('\n'))
+  writeFileSync(`output/links_[${now}].csv`, rows.join('\n'))
 }
 
 export function savePassportsSync(passports: PassportData[]) {
   const rows = [ CSV_PASSPORTS_HEADER.join(','), ...passports.map(w => [ w.address, w.status, w.password ].join(',')) ]
-  writeFileSync(`output/passports_[${dayjs().format('DD.MM.YYYY hh:mm.ss.SSS')}].csv`, rows.join('\n'))
+  writeFileSync(`output/passports_[${now}].csv`, rows.join('\n'))
 }
