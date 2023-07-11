@@ -1,6 +1,7 @@
-import { sleep } from './utils'
+import { getProxy, getProxyAgent, sleep } from './utils'
 import { WALLETS } from './persist'
 import { ethers } from 'ethers'
+import axios from 'axios'
 
 export async function bypass(threads: number, worker: (wallet: ethers.Wallet, index: number) => Promise<unknown>) {
   const pool = [ ...WALLETS ]
@@ -19,6 +20,13 @@ export async function bypass(threads: number, worker: (wallet: ethers.Wallet, in
     while (true) {
       const task = await getTask()
       if (task !== null) {
+        const proxy = getProxy(task.index)
+        if (proxy.reboot) {
+          await axios.get(proxy.reboot, { timeout: 60000 })
+          await sleep(60)
+          const { data: { ip } } = await axios.get(`https://api.myip.com`, { httpsAgent: getProxyAgent(task.index) })
+          console.log(`Новый ip: ${ip}`)
+        }
         await worker(task.wallet, task.index)
         if (task.isLast === false) {
           await sleep(60)

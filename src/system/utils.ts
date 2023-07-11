@@ -31,10 +31,20 @@ export const getSpinner = () => {
   return { start, stop }
 }
 
-export const getProxyAgent = moize((i: number) => {
+export const getProxy = (i: number) => {
   const credentials = PROXIES[i % PROXIES.length]
   if (credentials) {
-    return new HttpsProxyAgent(`http://${PROXIES[i % PROXIES.length]}`)
+    const [ auth, host, reboot ] = credentials.split('@')
+    const [ user, password ] = auth.split(':')
+    const [ ip, port ] = host.split(':')
+    return { user, password, ip, port, reboot }
+  }
+}
+
+export const getProxyAgent = moize((i: number) => {
+  const proxy = getProxy(i)
+  if (proxy) {
+    return new HttpsProxyAgent(`http://${proxy.user}:${proxy.password}@${proxy.ip}:${proxy.port}`)
   }
 }, { maxSize: 200 })
 
