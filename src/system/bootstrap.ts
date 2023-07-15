@@ -16,15 +16,16 @@ export async function bootstrap() {
     mkdirSync('output')
   }
 
-  const spinner = first ? getSpinner() : null
-  spinner?.start(`  Проверка лицензии...`)
-  const access = await checkAccess()
-  spinner?.stop()
-
-  if (access.status === true) {
-    console.log(chalk.green(`\n  Лицензия активна\n`))
-  } else {
-    console.log(chalk.red(`\n  Лицензия не активна: ${access.message?.toLowerCase()}\n`))
+  if (first === true) {
+    const spinner = getSpinner()
+    spinner.start(`  Проверка лицензии...`)
+    const access = await checkAccess()
+    spinner.stop()
+    if (access.status === true) {
+      console.log(chalk.green(`\n  Лицензия активна\n`))
+    } else {
+      console.log(chalk.red(`\n  Лицензия не активна: ${access.message?.toLowerCase()}\n`))
+    }
   }
 
   first = false
