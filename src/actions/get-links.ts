@@ -13,7 +13,7 @@ export async function getLinks(threads: number) {
     return
   }
 
-  console.log(`\nGetting links for ${WALLETS.length} wallets...\n`)
+  console.log(`\nНачинаю работу для ${WALLETS.length} кошельков...\n`)
 
   const links: LinkData[] = []
 
@@ -26,12 +26,12 @@ export async function getLinks(threads: number) {
           const response = await axios.post<GalxeGetOrCreateInquiryByAddressResponse>('https://graphigo.prd.galaxy.eco/query', {
             operationName: 'GetOrCreateInquiryByAddress',
             variables: { input: { address, signature: await wallet.signMessage(`get_or_create_address_inquiry:${address}`) } },
-            query: 'mutation GetOrCreateInquiryByAddress($input: GetOrCreateInquiryByAddressInput!) {\n  getOrCreateInquiryByAddress(input: $input) {\n    status\n    vendor\n    personaInquiry {\n      inquiryID\n      sessionToken\n      declinedReason\n      __typename\n    }\n    __typename\n  }\n}\n'
+            query: 'mutation GetOrCreateInquiryByAddress($input: GetOrCreateInquiryByAddressInput!) {\n  getOrCreateInquiryByAddress(input: $input) {\n    status\n    vendor\n    personaInquiry {\n      inquiryID\n      sessionToken\n      declinedReason\n      __typename\n    }\n    __typename\n  }\n}\n',
           }, {
             httpsAgent: getProxyAgent(index),
           })
           if (response.data.data.getOrCreateInquiryByAddress.status === 'Approved') {
-            console.log(`${chalk.bold(address)} Already approved`)
+            console.log(`${chalk.bold(address)} Уже одобрено`)
             return response
           }
           if (response.data.data.getOrCreateInquiryByAddress.personaInquiry.sessionToken) {
@@ -42,7 +42,7 @@ export async function getLinks(threads: number) {
 
       const response = await getOrCreateInquiryByAddress()
       if (response === undefined) {
-        console.log(`${chalk.bold(address)} Failed to get session token`)
+        console.log(`${chalk.bold(address)} Ошибка получения токена`)
         return
       }
 
