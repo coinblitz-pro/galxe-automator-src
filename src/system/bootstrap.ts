@@ -21,12 +21,18 @@ export async function bootstrap() {
 
   const spinner = getSpinner()
   spinner.start('  Проверка лицензии...')
-  const [ access ] = await Promise.all([ checkAccess(), sleep(2) ])
-  spinner.stop()
-
-  if (access.status === true) {
-    console.log(chalk.green(`\n  Лицензия активна\n`))
-  } else {
-    console.log(chalk.red(`\n  Лицензия не активна: ${access.message?.toLowerCase()}\n`))
+  for (let i = 0; i < 15; i++) {
+    const [ access ] = await Promise.all([ checkAccess(), sleep(i === 0 ? 2 : 0) ])
+    if (access.status === true) {
+      spinner.stop()
+      console.log(chalk.green(`\n  Лицензия активна\n`))
+      break
+    } else if (i === 11) {
+      spinner.stop()
+      console.log(chalk.red(`\n  Лицензия не активна: ${access.message?.toLowerCase()}\n`))
+      break
+    } else {
+      await sleep(20)
+    }
   }
 }
