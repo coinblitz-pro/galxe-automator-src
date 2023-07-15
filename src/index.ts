@@ -1,5 +1,8 @@
 import { cli } from './cli'
-import { printBanner } from './system/banner'
+import { printCoinblitzBanner, printSybildersBanner, printTitle } from './system/banner'
 
-printBanner()
+printCoinblitzBanner()
+printSybildersBanner()
+printTitle()
+
 cli()

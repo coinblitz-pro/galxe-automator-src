@@ -2,8 +2,8 @@ import chalk from 'chalk'
 import gradient from 'gradient-string'
 
 
-export function printBanner() {
-  console.log(
+export function printCoinblitzBanner() {
+  process.stdout.write(
     gradient('#00C9FF', '#92FE9D')('\n' +
       '                         88               88           88  88\n' +
       '                         ""               88           88  ""    ,d\n' +
@@ -14,10 +14,33 @@ export function printBanner() {
       '"8a,   ,aa  "8a,   ,a8"  88  88       88  88b,   ,a8"  88  88    88,    ,d8"       888  88b,   ,a8"  88          "8a,   ,a8"\n' +
       ' `"Ybbd8"\'   `"YbbdP"\'   88  88       88  8Y"Ybbd8"\'   88  88    "Y888  888888888  888  88`YbbdP"\'   88           `"YbbdP"\'\n' +
       '                                                                                        88\n' +
-      '                                                                                        88\n'),
+      '                                                                                        88\n'
+    ),
   )
+  process.stdout.write(
+    `                                                                                               ${chalk.cyan('https://t.me/coinblitz')}\n\n\n`
+  )
+}
+
+export function printSybildersBanner() {
   console.log(
-    '                  https://t.me/coinblitz  |  https://coinblitz.pro  |  https://github.com/coinblitz-pro\n' +
+    gradient.atlas(
+      '\n\n       ________       ___    ___ ________  ___  ___       ________  _______   ________  ________\n' +
+      '      |\\   ____\\     |\\  \\  /  /|\\   __  \\|\\  \\|\\  \\     |\\   ___ \\|\\  ___ \\ |\\   __  \\|\\   ____\\\n' +
+      '      \\ \\  \\___|_    \\ \\  \\/  / | \\  \\|\\ /\\ \\  \\ \\  \\    \\ \\  \\_|\\ \\ \\   __/|\\ \\  \\|\\  \\ \\  \\___|_\n' +
+      '       \\ \\_____  \\    \\ \\    / / \\ \\   __  \\ \\  \\ \\  \\    \\ \\  \\ \\\\ \\ \\  \\_|/_\\ \\   _  _\\ \\_____  \\\n' +
+      '        \\|____|\\  \\    \\/  /  /   \\ \\  \\|\\  \\ \\  \\ \\  \\____\\ \\  \\_\\\\ \\ \\  \\_|\\ \\ \\  \\\\  \\\\|____|\\  \\\n' +
+      '          ____\\_\\  \\ __/  / /      \\ \\_______\\ \\__\\ \\_______\\ \\_______\\ \\_______\\ \\__\\\\ _\\ ____\\_\\  \\\n' +
+      '         |\\_________\\\\___/ /        \\|_______|\\|__|\\|_______|\\|_______|\\|_______|\\|__|\\|__|\\_________\\\n' +
+      '         \\|_________\\|___|/                                                               \\|_________|\n' +
+      '      \n' +
+      '      ================================== Если ебать - то ебать плотно ==================================\n\n'
+    ),
+  )
+}
+
+export function printTitle(){
+  console.log(
     '\n' +
     `                                            ${chalk.bold('Galxe Passport Automator')}`,
   )
