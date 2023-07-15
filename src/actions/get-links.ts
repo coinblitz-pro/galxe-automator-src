@@ -1,19 +1,19 @@
 import axios from 'axios'
-import { saveLinksSync, WALLETS } from '../system/persist'
+import { saveLinksSync, TWO_CAPTCHA_TOKEN, WALLETS } from '../system/persist'
 import { LinkData } from '../system/types'
 import { getProxyAgent, randomString, saveError } from '../system/utils'
 import qs from 'qs'
 import chalk from 'chalk'
 import { ethers } from 'ethers'
 import { bypass } from '../system/bypass'
-import { checkLicense } from '../system/license'
 
 export async function getLinks(threads: number) {
-  if (await checkLicense() === false) {
+  if (!TWO_CAPTCHA_TOKEN) {
+    console.log(chalk.red(`\n  Для работы необходимо указать API ключ 2captcha\n`))
     return
   }
 
-  console.log(`\nНачинаю работу для ${WALLETS.length} кошельков...\n`)
+  console.log(`\n  Начинаю работу для ${WALLETS.length} кошельков...\n`)
 
   const links: LinkData[] = []
 
@@ -69,7 +69,7 @@ export async function getLinks(threads: number) {
     }
   })
 
-  console.log(`\n${chalk.green('Done!')}\n`)
+  console.log(`\n  ${chalk.green('Done!')}\n`)
 }
 
 

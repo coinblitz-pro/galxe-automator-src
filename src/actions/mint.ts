@@ -9,14 +9,14 @@ import { PassportData } from '../system/types'
 import crypto from 'crypto'
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils'
 import { solveGeetestCaptcha } from '../system/2captcha'
-import { checkLicense } from '../system/license'
 
 export async function mint(threads: number) {
-  if (await checkLicense() === false) {
+  if(!TWO_CAPTCHA_TOKEN) {
+    console.log(chalk.red(`\n  Для работы необходимо указать API ключ 2captcha\n`))
     return
   }
 
-  console.log(`\nМинт для ${WALLETS.length} кошельков...\n`)
+  console.log(`\n  Минт для ${WALLETS.length} кошельков...\n`)
 
   const passports: PassportData[] = []
   const bsc = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org/')
@@ -39,10 +39,10 @@ export async function mint(threads: number) {
               mintCount: 1,
               chain: 'BSC',
               captcha: await getCaptcha(),
-            }
+            },
           },
-          query: 'mutation PrepareParticipate($input: PrepareParticipateInput!) {\n  prepareParticipate(input: $input) {\n    allow\n    disallowReason\n    signature\n    nonce\n    mintFuncInfo {\n      funcName\n      nftCoreAddress\n      verifyIDs\n      powahs\n      cap\n      __typename\n    }\n    extLinkResp {\n      success\n      data\n      error\n      __typename\n    }\n    metaTxResp {\n      metaSig2\n      autoTaskUrl\n      metaSpaceAddr\n      forwarderAddr\n      metaTxHash\n      reqQueueing\n      __typename\n    }\n    solanaTxResp {\n      mint\n      updateAuthority\n      explorerUrl\n      signedTx\n      verifyID\n      __typename\n    }\n    aptosTxResp {\n      signatureExpiredAt\n      tokenName\n      __typename\n    }\n    tokenRewardCampaignTxResp {\n      signatureExpiredAt\n      verifyID\n      __typename\n    }\n    loyaltyPointsTxResp {\n      TotalClaimedPoints\n      __typename\n    }\n    __typename\n  }\n}\n'
-        }
+          query: 'mutation PrepareParticipate($input: PrepareParticipateInput!) {\n  prepareParticipate(input: $input) {\n    allow\n    disallowReason\n    signature\n    nonce\n    mintFuncInfo {\n      funcName\n      nftCoreAddress\n      verifyIDs\n      powahs\n      cap\n      __typename\n    }\n    extLinkResp {\n      success\n      data\n      error\n      __typename\n    }\n    metaTxResp {\n      metaSig2\n      autoTaskUrl\n      metaSpaceAddr\n      forwarderAddr\n      metaTxHash\n      reqQueueing\n      __typename\n    }\n    solanaTxResp {\n      mint\n      updateAuthority\n      explorerUrl\n      signedTx\n      verifyID\n      __typename\n    }\n    aptosTxResp {\n      signatureExpiredAt\n      tokenName\n      __typename\n    }\n    tokenRewardCampaignTxResp {\n      signatureExpiredAt\n      verifyID\n      __typename\n    }\n    loyaltyPointsTxResp {\n      TotalClaimedPoints\n      __typename\n    }\n    __typename\n  }\n}\n',
+        },
       })
 
       const powah = prepareParticipateResponse.data.data.prepareParticipate.mintFuncInfo.powahs[0]
@@ -61,8 +61,8 @@ export async function mint(threads: number) {
         data: {
           operationName: 'BasicUserInfo',
           variables: { address, listSpaceInput: { first: 30 } },
-          query: 'query BasicUserInfo($address: String!, $listSpaceInput: ListSpaceInput!) {\n  addressInfo(address: $address) {\n    id\n    username\n    address\n    hasEmail\n    avatar\n    solanaAddress\n    aptosAddress\n    seiAddress\n    hasEvmAddress\n    hasSolanaAddress\n    hasAptosAddress\n    hasTwitter\n    hasGithub\n    hasDiscord\n    hasTelegram\n    displayEmail\n    displayTwitter\n    displayGithub\n    displayDiscord\n    displayTelegram\n    email\n    twitterUserID\n    twitterUserName\n    githubUserID\n    githubUserName\n    passport {\n      status\n      pendingRedactAt\n      id\n      __typename\n    }\n    isVerifiedTwitterOauth2\n    isVerifiedDiscordOauth2\n    displayNamePref\n    discordUserID\n    discordUserName\n    telegramUserID\n    telegramUserName\n    subscriptions\n    isWhitelisted\n    isInvited\n    isAdmin\n    passportPendingRedactAt\n    spaces(input: $listSpaceInput) {\n      list {\n        ...SpaceBasicFrag\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment SpaceBasicFrag on Space {\n  id\n  name\n  info\n  thumbnail\n  alias\n  links\n  isVerified\n  status\n  followersCount\n  __typename\n}\n'
-        }
+          query: 'query BasicUserInfo($address: String!, $listSpaceInput: ListSpaceInput!) {\n  addressInfo(address: $address) {\n    id\n    username\n    address\n    hasEmail\n    avatar\n    solanaAddress\n    aptosAddress\n    seiAddress\n    hasEvmAddress\n    hasSolanaAddress\n    hasAptosAddress\n    hasTwitter\n    hasGithub\n    hasDiscord\n    hasTelegram\n    displayEmail\n    displayTwitter\n    displayGithub\n    displayDiscord\n    displayTelegram\n    email\n    twitterUserID\n    twitterUserName\n    githubUserID\n    githubUserName\n    passport {\n      status\n      pendingRedactAt\n      id\n      __typename\n    }\n    isVerifiedTwitterOauth2\n    isVerifiedDiscordOauth2\n    displayNamePref\n    discordUserID\n    discordUserName\n    telegramUserID\n    telegramUserName\n    subscriptions\n    isWhitelisted\n    isInvited\n    isAdmin\n    passportPendingRedactAt\n    spaces(input: $listSpaceInput) {\n      list {\n        ...SpaceBasicFrag\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment SpaceBasicFrag on Space {\n  id\n  name\n  info\n  thumbnail\n  alias\n  links\n  isVerified\n  status\n  followersCount\n  __typename\n}\n',
+        },
       })
 
       const { status } = basicUserInfoResponse.data.data.addressInfo.passport
@@ -70,18 +70,18 @@ export async function mint(threads: number) {
       if (status === 'MINTED') {
         passports.push({ address, status: 'Already Minted' })
         savePassportsSync(passports)
-        console.log(`${chalk.bold(address)} Паспорт уже сминчен`)
+        console.log(`  ${chalk.bold(address)} Паспорт уже сминчен`)
         return
       } else if (status === 'ISSUED_NOT_MINTED') {
         const receipt = await onchainMint()
         passports.push({ address, password, status: 'Minted (without password)' })
         savePassportsSync(passports)
-        console.log(`${chalk.bold(address)} Паспорт успешно сминчен https://bscscan.com/tx/${receipt.hash}`)
+        console.log(`  ${chalk.bold(address)} Паспорт успешно сминчен https://bscscan.com/tx/${receipt.hash}`)
         return
-      } else if (status === 'NOT_ISSUED'){
+      } else if (status === 'NOT_ISSUED') {
         passports.push({ address, status: 'Not issued' })
         savePassportsSync(passports)
-        console.log(`${chalk.bold(address)} KYC не пройден (или не запрашивался)`)
+        console.log(`  ${chalk.bold(address)} KYC не пройден (или не запрашивался)`)
         return
       }
 
@@ -89,7 +89,7 @@ export async function mint(threads: number) {
       if (balance.lt('26000000000000000')) {
         passports.push({ address, status: 'Insufficient Balance' })
         savePassportsSync(passports)
-        console.log(`${chalk.bold(address)} 'Недостаточный баланс, минимум 0.026BNB'`)
+        console.log(`  ${chalk.bold(address)} 'Недостаточный баланс, минимум 0.026BNB'`)
         return
       }
 
@@ -100,10 +100,10 @@ export async function mint(threads: number) {
             input: {
               address,
               signature: await wallet.signMessage(`prepare_address_passport:${address}`),
-            }
+            },
           },
-          query: 'mutation PreparePassport($input: PreparePassportInput!) {\n  preparePassport(input: $input) {\n    data\n    __typename\n  }\n}\n'
-        }
+          query: 'mutation PreparePassport($input: PreparePassportInput!) {\n  preparePassport(input: $input) {\n    data\n    __typename\n  }\n}\n',
+        },
       })
       await sleep(5)
 
@@ -119,20 +119,20 @@ export async function mint(threads: number) {
             input: {
               address,
               signature: await wallet.signMessage(`save_address_passport:${address}`),
-              cipher: '0x' + Buffer.concat([ iv, encrypted, cipher.getAuthTag() ]).toString('hex')
-            }
+              cipher: '0x' + Buffer.concat([ iv, encrypted, cipher.getAuthTag() ]).toString('hex'),
+            },
           },
-          query: 'mutation SavePassport($input: SavePassportInput!) {\n  savePassport(input: $input) {\n    id\n    encrytionAlgorithm\n    cipher\n    __typename\n  }\n}\n'
-        }
+          query: 'mutation SavePassport($input: SavePassportInput!) {\n  savePassport(input: $input) {\n    id\n    encrytionAlgorithm\n    cipher\n    __typename\n  }\n}\n',
+        },
       })
       await sleep(5)
 
       const receipt = await onchainMint()
       passports.push({ address, password, status: 'Minted' })
       savePassportsSync(passports)
-      console.log(`${chalk.bold(address)} Паспорт успешно сминчен https://bscscan.com/tx/${receipt.hash}`)
+      console.log(`  ${chalk.bold(address)} Паспорт успешно сминчен https://bscscan.com/tx/${receipt.hash}`)
     } catch (e) {
-      console.log(`${chalk.bold(address)} ERROR: ${e.message}`)
+      console.log(`  ${chalk.bold(address)} ERROR: ${e.message}`)
       passports.push({ address, password, status: 'ERR' })
       savePassportsSync(passports)
       saveError(e)

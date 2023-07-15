@@ -7,7 +7,7 @@ import { ethers } from 'ethers'
 export let WALLETS: ethers.Wallet[] = []
 export let PROXIES: string[] = []
 export let TWO_CAPTCHA_TOKEN: string
-export let LICENSE: string
+export let LICENSE = ''
 
 const now = dayjs().format('DD.MM.YYYY hh:mm')
 

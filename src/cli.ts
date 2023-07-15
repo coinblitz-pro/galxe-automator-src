@@ -5,27 +5,24 @@ import { mint } from './actions/mint'
 import { addProxy } from './actions/add-proxy'
 import { addKeys } from './actions/add-wallets'
 import { add2captcha } from './actions/add-2captcha'
-import { makeFirewallScript } from './actions/make-firewall-script'
 import { addLicense } from './actions/add-license'
+import { checkAccess } from './system/license'
 
 export async function cli() {
   await bootstrap()
 
+  const access = await checkAccess()
   const { action } = await prompt([ {
     type: 'list',
     name: 'action',
     message: 'Что делаем?',
     pageSize: 8,
-    choices: [
-      'Ссылки на KYC',
-      'Mint паспорта',
-      'Настройки',
-      'Лицензия',
-      'Выход'
-    ],
+    choices: access.status === true
+      ? [ 'Ссылки на KYC', 'Mint паспорта', 'Настройки', 'Лицензия', 'Выход' ]
+      : [ 'Настройки', 'Лицензия', 'Выход' ],
   } ])
 
-  if (action === 'Получить ссылки на KYC') {
+  if (action === 'Ссылки на KYC') {
     await getLinks(await getQuantity())
   }
 
@@ -43,8 +40,7 @@ export async function cli() {
         'Прокси',
         'Кошельки',
         '2captcha',
-        'Фаервол',
-        'Назад'
+        'Назад',
       ],
     } ])
 
@@ -59,11 +55,6 @@ export async function cli() {
     if (action === '2captcha') {
       await add2captcha()
     }
-
-    if (action === 'Фаервол') {
-      await makeFirewallScript()
-    }
-
   }
 
   if (action === 'Лицензия') {
@@ -71,7 +62,7 @@ export async function cli() {
   }
 
   if (action === 'Выход') {
-    process.exit()
+    return process.exit()
   }
 
   await cli()

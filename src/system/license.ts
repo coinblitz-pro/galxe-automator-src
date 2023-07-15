@@ -1,23 +1,33 @@
-import crypto from 'crypto'
-import { PUBLIC_KEY } from './constants'
 import si from 'systeminformation'
+import axios from 'axios'
 import { LICENSE } from './persist'
 
+let access: { status: boolean, message?: string } = { status: null }
 
-export const sign = (input, privateKey) => {
-  const signer = crypto.createSign('RSA-SHA256')
-  signer.update(input, 'utf-8')
-  return signer.sign(privateKey, 'hex')
-}
+export async function checkAccess(key = LICENSE) {
+  if (access.status !== null) {
+    return access
+  }
 
-export function verify(signature, data) {
-  if (!signature) return false
-  const verify = crypto.createVerify('RSA-SHA256')
-  verify.update(data, 'utf-8')
-  return verify.verify(PUBLIC_KEY, signature, 'hex')
-}
-
-export async function checkLicense() {
   const { uuid } = await si.system()
-  return verify(LICENSE, uuid)
+  const response = await axios.post(
+    `https://license-server-production.up.railway.app/auth`,
+    { app_name: 'galxe-automator', key: key, user_info: uuid },
+    { validateStatus: () => true },
+  )
+
+  switch (response.status) {
+    case 200:
+      return access = { status: true }
+    case 400:
+      return access = { status: false, message: 'Неверный запрос' }
+    case 401:
+      return access = { status: false, message: 'Неверный ключ' }
+    case 403:
+      return access = { status: false, message: 'Привязка нового устройства невозможна' }
+    case 500:
+      return access = { status: false, message: 'Ошибка сервера' }
+    default:
+      return access = { status: false, message: 'Что-то пошло не так' }
+  }
 }
