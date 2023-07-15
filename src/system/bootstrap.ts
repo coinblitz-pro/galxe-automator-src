@@ -3,8 +3,9 @@ import { existsSync, mkdirSync } from 'fs'
 import { checkAccess } from './license'
 import chalk from 'chalk'
 import { printBanner } from './banner'
-import { getSpinner, sleep } from './utils'
+import { getSpinner } from './utils'
 
+let first = true
 
 export async function bootstrap() {
   console.clear()
@@ -19,20 +20,16 @@ export async function bootstrap() {
     mkdirSync('output')
   }
 
-  const spinner = getSpinner()
-  spinner.start('  Проверка лицензии...')
-  for (let i = 0; i < 15; i++) {
-    const [ access ] = await Promise.all([ checkAccess(), sleep(i === 0 ? 2 : 0) ])
-    if (access.status === true) {
-      spinner.stop()
-      console.log(chalk.green(`\n  Лицензия активна\n`))
-      break
-    } else if (i === 11) {
-      spinner.stop()
-      console.log(chalk.red(`\n  Лицензия не активна: ${access.message?.toLowerCase()}\n`))
-      break
-    } else {
-      await sleep(20)
-    }
+  const spinner = first ? getSpinner() : null
+  spinner?.start(`  Проверка лицензии...`)
+  const access = await checkAccess()
+  spinner?.stop()
+
+  if (access.status === true) {
+    console.log(chalk.green(`\n  Лицензия активна\n`))
+  } else {
+    console.log(chalk.red(`\n  Лицензия не активна: ${access.message?.toLowerCase()}\n`))
   }
+
+  first = false
 }

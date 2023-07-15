@@ -4,7 +4,7 @@ import { LICENSE } from './persist'
 
 let access: { status: boolean, message?: string } = { status: null }
 
-export async function checkAccess(key = LICENSE) {
+export async function checkAccess(key?: string) {
   if (access.status !== null) {
     return access
   }
@@ -12,7 +12,7 @@ export async function checkAccess(key = LICENSE) {
   const { uuid } = await si.system()
   const response = await axios.post(
     `https://license-server-production.up.railway.app/auth`,
-    { app_name: 'galxe-automator', key: key, user_info: uuid },
+    { app_name: 'galxe-automator', key: key ?? LICENSE, user_info: uuid },
     { validateStatus: () => true },
   )
 
@@ -30,4 +30,8 @@ export async function checkAccess(key = LICENSE) {
     default:
       return access = { status: false, message: 'Что-то пошло не так' }
   }
+}
+
+export function resetAccess() {
+  access = { status: null }
 }

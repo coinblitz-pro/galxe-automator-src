@@ -1,7 +1,8 @@
 import readline from 'readline'
 import { LICENSE, saveLicenseSync } from '../system/persist'
 import chalk from 'chalk'
-import { checkAccess } from '../system/license'
+import { checkAccess, resetAccess } from '../system/license'
+import { getSpinner, sleep } from '../system/utils'
 
 export async function addLicense() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
@@ -12,15 +13,26 @@ export async function addLicense() {
     (answer) => {
       rl.close()
       resolve(answer)
+      console.log()
     }),
   )
 
-  const pass = await checkAccess(answer.trim())
   saveLicenseSync(answer.trim())
+  resetAccess()
 
-  if (pass.status) {
-    console.log(chalk.green(`\n  Ключ сохранен\n`))
-  } else {
-    console.log(chalk.red(`\n  ${pass.message}\n`))
+  const spinner = getSpinner()
+  spinner.start(`  Проверка лицензии...`)
+
+  for (let i = 1; i <= 15; i++) {
+    const pass = await checkAccess(answer.trim())
+    if (pass.status) {
+      console.log(chalk.green(`\n  Ключ сохранен\n`))
+      spinner.stop()
+      break
+    } else if (i === 15) {
+      console.log(chalk.red(`\n  ${pass.message}\n`))
+    } else {
+      await sleep(20, false)
+    }
   }
 }
