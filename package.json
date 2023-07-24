@@ -1,18 +1,21 @@
 {
   "name": "galxe-automator",
   "private": true,
-  "version": "1.5.0",
+  "version": "1.5.1",
   "author": "Ivan Lagunovsky <ivan.lagunovsky@gmail.com>",
   "bin": "./dist/bundle.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "start": "ts-node src/index.ts",
     "transpile": "tsc",
-    "bundle": "esbuild dist/index.js --bundle --minify --outfile=dist/bundle.js --platform=node --target=node16 --legal-comments=none",
+    "bundle": "esbuild dist/index.js --bundle --minify --outfile=dist/bundle.js --platform=node --target=node18 --legal-comments=none",
     "package": "pkg package.json --compress Brotli",
     "build": "rm -rf bin && npm run transpile && npm run bundle && npm run package && ts-node utils/postbuild.ts && rm -rf dist"
   },
   "devDependencies": {
-    "@types/node": "^20.4.4",
+    "@types/node": "^18.17.0",
     "axios": "^1.4.0",
     "chalk": "^4.1.2",
     "dayjs": "^1.11.9",
@@ -23,6 +26,7 @@
     "https-proxy-agent": "^7.0.1",
     "inquirer": "^8.2.5",
     "json5": "^2.2.3",
+    "md5": "^2.3.0",
     "moize": "^6.1.6",
     "pkg": "^5.8.1",
     "qs": "^6.11.2",
@@ -35,12 +39,12 @@
     "scripts": "dist/bundle.js",
     "outputPath": "bin",
     "targets": [
-      "node16-linux-x64",
-      "node16-linux-arm64",
-      "node16-win-x64",
-      "node16-win-arm64",
-      "node16-mac-x64",
-      "node16-mac-arm64"
+      "node18-linux-x64",
+      "node18-linux-arm64",
+      "node18-win-x64",
+      "node18-win-arm64",
+      "node18-mac-x64",
+      "node18-mac-arm64"
     ]
   }
 }

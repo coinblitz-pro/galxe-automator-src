@@ -14,11 +14,11 @@ export function printCoinblitzBanner() {
       '"8a,   ,aa  "8a,   ,a8"  88  88       88  88b,   ,a8"  88  88    88,    ,d8"       888  88b,   ,a8"  88          "8a,   ,a8"\n' +
       ' `"Ybbd8"\'   `"YbbdP"\'   88  88       88  8Y"Ybbd8"\'   88  88    "Y888  888888888  888  88`YbbdP"\'   88           `"YbbdP"\'\n' +
       '                                                                                        88\n' +
-      '                                                                                        88'
+      '                                                                                        88',
     ),
   )
   process.stdout.write(
-    `           ${chalk.hex('#444956')('https://t.me/coinblitz')}`
+    `           ${chalk.hex('#444956')('https://t.me/coinblitz')}`,
   )
 }
 
@@ -34,12 +34,12 @@ export function printSybildersBanner() {
       '             |\\_________\\\\___/ /        \\|_______|\\|__|\\|_______|\\|_______|\\|_______|\\|__|\\|__|\\_________\\\n' +
       '             \\|_________\\|___|/                                                               \\|_________|\n' +
       '          \n' +
-      '          ================================== Если ебать - то ебать плотно ==================================\n\n'
+      '          ================================== Если ебать - то ебать плотно ==================================\n\n',
     ),
   )
 }
 
-export function printTitle(){
+export function printTitle() {
   console.log(
     `\n  ${chalk.bold('Galxe Passport Automator')}\n`,
   )

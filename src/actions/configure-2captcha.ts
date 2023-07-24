@@ -1,7 +1,5 @@
 import { prompt } from 'inquirer'
 import { CONFIG, saveConfigSync } from '../system/persist'
-import { lg } from '../system/utils'
-import chalk from 'chalk'
 
 export async function configure2captcha() {
   const { key } = await prompt([ {
