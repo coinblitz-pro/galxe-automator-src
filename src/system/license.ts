@@ -1,6 +1,6 @@
 import si from 'systeminformation'
 import axios from 'axios'
-import { LICENSE } from './persist'
+import { CONFIG } from './persist'
 
 let access: { status: boolean, message?: string } = { status: null }
 
@@ -12,7 +12,7 @@ export async function checkAccess(key?: string) {
   const { uuid } = await si.system()
   const response = await axios.post(
     `https://license-server-production.up.railway.app/auth`,
-    { app_name: 'galxe-automator', key: key ?? LICENSE, user_info: uuid },
+    { app_name: 'galxe-automator', key: key ?? CONFIG.license, user_info: uuid },
     { validateStatus: () => true },
   )
 

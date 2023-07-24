@@ -4,7 +4,5 @@ bin
 output
 keys.txt
 proxies.txt
-2captcha.txt
-setup-firewall.sh
-license.txt
 errors.txt
+config.json5

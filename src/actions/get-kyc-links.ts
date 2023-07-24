@@ -1,19 +1,19 @@
 import axios from 'axios'
-import { saveLinksSync, TWO_CAPTCHA_TOKEN, WALLETS } from '../system/persist'
+import { CONFIG, saveLinksSync, WALLETS } from '../system/persist'
 import { LinkData } from '../system/types'
-import { getProxyAgent, randomString, saveError } from '../system/utils'
+import { getProxyAgent, lg, random, randomString, saveError, sleep } from '../system/utils'
 import qs from 'qs'
 import chalk from 'chalk'
 import { ethers } from 'ethers'
 import { bypass } from '../system/bypass'
 
-export async function getLinks(threads: number) {
-  if (!TWO_CAPTCHA_TOKEN) {
-    console.log(chalk.red(`\n  Для работы необходимо указать API ключ 2captcha\n`))
+export async function getKycLinks(threads: number) {
+  if (!CONFIG.twoCaptcha) {
+    lg(chalk.red(`\n  Для работы необходимо указать API ключ 2captcha в настройках\n`))
     return
   }
 
-  console.log(`\n  Начинаю работу для ${WALLETS.length} кошельков...\n`)
+  lg(`\n  Начинаю работу для ${WALLETS.length} кошельков...\n`)
 
   const links: LinkData[] = []
 
@@ -31,18 +31,19 @@ export async function getLinks(threads: number) {
             httpsAgent: getProxyAgent(index),
           })
           if (response.data.data.getOrCreateInquiryByAddress.status === 'Approved') {
-            console.log(`${chalk.bold(address)} Уже одобрено`)
+            lg(`${chalk.bold(address)} Уже одобрено`, true)
             return response
           }
           if (response.data.data.getOrCreateInquiryByAddress.personaInquiry.sessionToken) {
             return response
           }
+          await sleep(random(...CONFIG.sleep.betweenGalxeRequest))
         }
       }
 
       const response = await getOrCreateInquiryByAddress()
       if (response === undefined) {
-        console.log(`${chalk.bold(address)} Ошибка получения токена`)
+        lg(`${chalk.bold(address)} Ошибка получения токена`, true)
         return
       }
 
@@ -60,12 +61,13 @@ export async function getLinks(threads: number) {
 
       const link = `https://withpersona.com/widget?${params}`
       links.push({ address, link })
-      saveLinksSync(links)
 
-      console.log(`${chalk.bold(address)} ${chalk.cyan(link)}`)
+      lg(`${chalk.bold(address)} ${chalk.cyan(link)}`, true)
     } catch (e) {
-      console.log(`${chalk.bold(address)} ERROR: ${e.message}`)
+      lg(`${chalk.bold(address)} ERROR: ${e.message}`, true)
       saveError(e)
+    } finally {
+      saveLinksSync(links)
     }
   })
 

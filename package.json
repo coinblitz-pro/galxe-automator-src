@@ -1,38 +1,39 @@
 {
   "name": "galxe-automator",
   "private": true,
-  "version": "1.4.1",
+  "version": "1.5.0",
   "author": "Ivan Lagunovsky <ivan.lagunovsky@gmail.com>",
   "bin": "./dist/bundle.js",
   "scripts": {
     "start": "ts-node src/index.ts",
     "transpile": "tsc",
-    "bundle": "esbuild dist/index.js --bundle --minify --outfile=dist/bundle.js --format=cjs --platform=node",
-    "package": "pkg package.json",
-    "build": "rm -rf bin && npm run transpile && npm run bundle && npm run package && ts-node utils/postbuild.ts && rm -rf dist",
-    "sign": "ts-node utils/sign.ts"
+    "bundle": "esbuild dist/index.js --bundle --minify --outfile=dist/bundle.js --platform=node --target=node16 --legal-comments=none",
+    "package": "pkg package.json --compress Brotli",
+    "build": "rm -rf bin && npm run transpile && npm run bundle && npm run package && ts-node utils/postbuild.ts && rm -rf dist"
   },
   "devDependencies": {
-    "@types/node": "^20.4.2",
+    "@types/node": "^20.4.4",
     "axios": "^1.4.0",
     "chalk": "^4.1.2",
     "dayjs": "^1.11.9",
-    "esbuild": "^0.18.13",
+    "deepmerge": "^4.3.1",
+    "esbuild": "^0.18.16",
     "ethers": "^5.7.2",
     "gradient-string": "^2.0.2",
     "https-proxy-agent": "^7.0.1",
     "inquirer": "^8.2.5",
+    "json5": "^2.2.3",
     "moize": "^6.1.6",
     "pkg": "^5.8.1",
     "qs": "^6.11.2",
     "systeminformation": "^5.18.7",
     "ts-node": "^10.9.1",
+    "type-fest": "^4.0.0",
     "typescript": "^5.1.6"
   },
   "pkg": {
     "scripts": "dist/bundle.js",
     "outputPath": "bin",
-    "compress": true,
     "targets": [
       "node16-linux-x64",
       "node16-linux-arm64",

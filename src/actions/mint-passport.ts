@@ -1,25 +1,25 @@
 import { bypass } from '../system/bypass'
 import { ethers } from 'ethers'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
-import { savePassportsSync, TWO_CAPTCHA_TOKEN, WALLETS } from '../system/persist'
+import { CONFIG, savePassportsSync, WALLETS } from '../system/persist'
 import axios from 'axios'
-import { getProxyAgent, randomString, saveError, sleep } from '../system/utils'
+import { getProxyAgent, lg, random, randomString, saveError, sleep } from '../system/utils'
 import chalk from 'chalk'
 import { PassportData } from '../system/types'
 import crypto from 'crypto'
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils'
 import { solveGeetestCaptcha } from '../system/2captcha'
 
-export async function mint(threads: number) {
-  if(!TWO_CAPTCHA_TOKEN) {
-    console.log(chalk.red(`\n  Для работы необходимо указать API ключ 2captcha\n`))
+export async function mintPassport(threads: number) {
+  if (!CONFIG.twoCaptcha) {
+    lg(chalk.red(`\n  Для работы необходимо указать API ключ 2captcha в настройках\n`))
     return
   }
 
-  console.log(`\n  Минт для ${WALLETS.length} кошельков...\n`)
+  lg(`\n  Минт для ${WALLETS.length} кошельков...\n`)
 
   const passports: PassportData[] = []
-  const bsc = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org/')
+  const bsc = new ethers.providers.JsonRpcProvider(CONFIG.bsc.rpc)
   const contract = new ethers.Contract('0x2d18f2d27d50c9b4013deba3d54f60996bd8847e', JSON.parse('[{"inputs":[{"internalType":"uint256","name":"_cid","type":"uint256"},{"internalType":"contract IStarNFT","name":"_starNFT","type":"address"},{"internalType":"uint256","name":"_dummyId","type":"uint256"},{"internalType":"uint256","name":"_powah","type":"uint256"},{"internalType":"bytes","name":"_signature","type":"bytes"}],"name":"claim","outputs":[],"stateMutability":"payable","type":"function"}]'))
 
   await bypass(threads, async (wallet: ethers.Wallet, index: number) => {
@@ -27,7 +27,7 @@ export async function mint(threads: number) {
     const password = randomString(14) + randomString(2, '~!@#$%^&*.=')
     const galaxy = axios.create({ baseURL: 'https://graphigo.prd.galaxy.eco/query', httpsAgent: getProxyAgent(index), method: 'POST' })
 
-    async function onchainMint() {
+    async function mint() {
       const prepareParticipateResponse = await galaxy<GalxePrepareParticipateResponse>({
         data: {
           operationName: 'PrepareParticipate',
@@ -50,8 +50,16 @@ export async function mint(threads: number) {
       const nftCoreAddress = prepareParticipateResponse.data.data.prepareParticipate.mintFuncInfo.nftCoreAddress
       const signature = prepareParticipateResponse.data.data.prepareParticipate.signature
 
-      const tx: TransactionResponse = await contract.connect(wallet.connect(bsc)).claim(powah, nftCoreAddress, dummyId, powah, signature, { value: ethers.utils.parseEther('0.025') })
-      await tx.wait()
+      const tx: TransactionResponse = await contract
+        .connect(wallet.connect(bsc))
+        .claim(
+          powah, nftCoreAddress, dummyId, powah, signature,
+          { value: ethers.utils.parseEther('0.025'), gasPrice: CONFIG.bsc.gasPrice },
+        )
+
+      if (CONFIG.bsc.waitTx) {
+        await tx.wait()
+      }
 
       return tx
     }
@@ -69,27 +77,23 @@ export async function mint(threads: number) {
 
       if (status === 'MINTED') {
         passports.push({ address, status: 'Already Minted' })
-        savePassportsSync(passports)
-        console.log(`  ${chalk.bold(address)} Паспорт уже сминчен`)
+        lg(`${chalk.bold(address)} Паспорт уже сминчен`, true)
         return
       } else if (status === 'ISSUED_NOT_MINTED') {
-        const receipt = await onchainMint()
+        const receipt = await mint()
         passports.push({ address, password, status: 'Minted (without password)' })
-        savePassportsSync(passports)
-        console.log(`  ${chalk.bold(address)} Паспорт успешно сминчен https://bscscan.com/tx/${receipt.hash}`)
+        lg(`${chalk.bold(address)} Паспорт успешно сминчен https://bscscan.com/tx/${receipt.hash}`, true)
         return
       } else if (status === 'NOT_ISSUED') {
         passports.push({ address, status: 'Not issued' })
-        savePassportsSync(passports)
-        console.log(`  ${chalk.bold(address)} KYC не пройден (или не запрашивался)`)
+        lg(`${chalk.bold(address)} KYC не пройден (или не запрашивался)`, true)
         return
       }
 
       const balance = await bsc.getBalance(address)
       if (balance.lt('26000000000000000')) {
         passports.push({ address, status: 'Insufficient Balance' })
-        savePassportsSync(passports)
-        console.log(`  ${chalk.bold(address)} 'Недостаточный баланс, минимум 0.026BNB'`)
+        lg(`${chalk.bold(address)} 'Недостаточный баланс, минимум 0.026BNB'`, true)
         return
       }
 
@@ -105,7 +109,7 @@ export async function mint(threads: number) {
           query: 'mutation PreparePassport($input: PreparePassportInput!) {\n  preparePassport(input: $input) {\n    data\n    __typename\n  }\n}\n',
         },
       })
-      await sleep(5)
+      await sleep(random(...CONFIG.sleep.betweenGalxeRequest))
 
       const key = Buffer.from(keccak256(toUtf8Bytes(password)).slice(2), 'hex')
       const iv = crypto.randomBytes(12)
@@ -125,30 +129,28 @@ export async function mint(threads: number) {
           query: 'mutation SavePassport($input: SavePassportInput!) {\n  savePassport(input: $input) {\n    id\n    encrytionAlgorithm\n    cipher\n    __typename\n  }\n}\n',
         },
       })
-      await sleep(5)
+      await sleep(random(...CONFIG.sleep.betweenGalxeRequest))
 
-      const receipt = await onchainMint()
+      const receipt = await mint()
       passports.push({ address, password, status: 'Minted' })
-      savePassportsSync(passports)
-      console.log(`  ${chalk.bold(address)} Паспорт успешно сминчен https://bscscan.com/tx/${receipt.hash}`)
+      lg(`${chalk.bold(address)} Паспорт успешно сминчен https://bscscan.com/tx/${receipt.hash}`, true)
     } catch (e) {
-      console.log(`  ${chalk.bold(address)} ERROR: ${e.message}`)
+      lg(`${chalk.bold(address)} ERROR: ${e.message}`, true)
       passports.push({ address, password, status: 'ERR' })
-      savePassportsSync(passports)
       saveError(e)
+    } finally {
+      savePassportsSync(passports)
     }
   })
 }
 
 async function getCaptcha() {
-  if (TWO_CAPTCHA_TOKEN) {
-    const solvation = await solveGeetestCaptcha('244bcb8b9846215df5af4c624a750db4', `https://galxe.com/passport?step=toMint`)
-    return {
-      lotNumber: solvation.lot_number,
-      captchaOutput: solvation.captcha_output,
-      passToken: solvation.pass_token,
-      genTime: solvation.gen_time,
-    }
+  const solvation = await solveGeetestCaptcha('244bcb8b9846215df5af4c624a750db4', `https://galxe.com/passport?step=toMint`)
+  return {
+    lotNumber: solvation.lot_number,
+    captchaOutput: solvation.captcha_output,
+    passToken: solvation.pass_token,
+    genTime: solvation.gen_time,
   }
 }
 
@@ -174,33 +176,29 @@ export type GalxePreparePassportResponse = {
 }
 
 export type GalxeSavePassportResponse = {
-  data: { savePassport: { id: string, encrytionAlgorithm: string, cipher: string } }
+  data: {
+    savePassport: {
+      id: string
+      encrytionAlgorithm: string
+      cipher: string
+    }
+  }
 }
 
 export type GalxePrepareParticipateResponse = {
   data: {
     prepareParticipate: {
-      allow: true,
-      disallowReason: '',
-      signature: string,
-      nonce: '1688486944',
+      allow: true
+      disallowReason: string
+      signature: string
+      nonce: string
       mintFuncInfo: {
-        funcName: '',
-        nftCoreAddress: '0xe84050261cb0a35982ea0f6f3d9dff4b8ed3c012',
-        verifyIDs: [
-          162795410
-        ],
-        powahs: [
-          6336
-        ],
-        cap: 0
-      },
-      extLinkResp: null,
-      metaTxResp: null,
-      solanaTxResp: null,
-      aptosTxResp: null,
-      tokenRewardCampaignTxResp: null,
-      loyaltyPointsTxResp: null,
+        funcName: string
+        nftCoreAddress: string
+        verifyIDs: [ number ]
+        powahs: [ number ]
+        cap: number
+      }
     }
   }
 }

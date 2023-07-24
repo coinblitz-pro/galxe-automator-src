@@ -1,13 +1,30 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs'
-import { LinkData, PassportData } from './types'
+import { Config, LinkData, PassportData } from './types'
 import { CSV_LINKS_HEADER, CSV_PASSPORTS_HEADER } from './constants'
 import dayjs from 'dayjs'
 import { ethers } from 'ethers'
+import JSON5 from 'json5'
+import deepmerge from 'deepmerge'
+import { PartialDeep } from 'type-fest'
 
 export let WALLETS: ethers.Wallet[] = []
 export let PROXIES: string[] = []
-export let TWO_CAPTCHA_TOKEN: string
-export let LICENSE = ''
+
+export let CONFIG: Config = {
+  license: '',
+  twoCaptcha: '',
+  banner: true,
+  bsc: {
+    rpc: 'https://bsc-dataseed.binance.org/',
+    gasPrice: 3,
+    waitTx: true,
+  },
+  sleep: {
+    betweenGalxeRequest: [ 5, 10 ],
+    betweenWallet: [ 20, 40 ],
+    beforeThread: [ 30, 60 ],
+  },
+}
 
 const now = dayjs().format('DD.MM.YYYY hh:mm')
 
@@ -23,32 +40,24 @@ export function loadProxiesSync() {
   PROXIES = loadFile('proxies.txt')
 }
 
-export function load2captchaSync() {
-  TWO_CAPTCHA_TOKEN = loadFile('2captcha.txt')[0]
-}
-
-export function loadLicenseSync() {
-  LICENSE = loadFile('license.txt')[0]
-}
-
 export function saveProxiesSync(rows: string[]) {
   PROXIES = rows
   writeFileSync(`proxies.txt`, rows.join('\n'))
 }
 
-export function save2CaptchaSync(key: string) {
-  TWO_CAPTCHA_TOKEN = key
-  writeFileSync(`2captcha.txt`, key)
-}
-
-export function saveLicenseSync(license: string) {
-  LICENSE = license
-  writeFileSync(`license.txt`, license)
-}
-
 export function saveKeysSync(rows: string[]) {
   WALLETS = rows.map(key => new ethers.Wallet(key))
   writeFileSync(`keys.txt`, rows.join('\n'))
+}
+
+export function loadConfigSync() {
+  CONFIG = existsSync('config.json5')
+    ? JSON5.parse<Config>(readFileSync('config.json5').toString())
+    : CONFIG
+}
+
+export function saveConfigSync(update: PartialDeep<Config>) {
+  writeFileSync('config.json5', JSON5.stringify(deepmerge(CONFIG, update), null, 2))
 }
 
 export function saveLinksSync(links: LinkData[]) {

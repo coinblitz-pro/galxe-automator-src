@@ -1,7 +1,7 @@
 import moize from 'moize'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 import { PROXIES } from './persist'
-import { appendFileSync } from 'fs'
+import { appendFileSync, existsSync } from 'fs'
 import dayjs from 'dayjs'
 
 export const getSpinner = () => {
@@ -69,5 +69,32 @@ export function randomString(length: number, characters = 'ABCDEFGHIJKLMNOPQRSTU
 }
 
 export function saveError(error: any) {
-  appendFileSync('./errors.txt', `[${dayjs().format('DD.MM.YYYY hh:mm.ss.SSS')}]\n${JSON.stringify(error.error ?? error, null, 2)}\n`)
+  appendFileSync('./errors.txt', `[${dayjs().format('DD.MM.YYYY hh:mm.ss')}]\n${JSON.stringify(error.error ?? error, null, 2)}\n`)
+}
+
+export function lg(message: string, withTime = false) {
+  console.log(withTime ? `  [${dayjs().format('DD.MM.YYYY hh:mm.ss')}] ${message}` : `  ${message}`)
+}
+
+export function isFirstRun() {
+  return existsSync('config.json5') === false
+}
+
+export async function readMultiline() {
+  let result = ''
+
+  await new Promise<void>((resolve) => {
+    const listener = (raw: Buffer) => {
+      const input = raw.toString().trim()
+      if (input) {
+        result += input + '\n'
+      } else {
+        process.stdin.removeListener('data', listener)
+        resolve()
+      }
+    }
+    process.stdin.on('data', listener)
+  })
+
+  return result
 }

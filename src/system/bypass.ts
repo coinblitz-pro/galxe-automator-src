@@ -1,5 +1,5 @@
-import { getProxy, getProxyAgent, sleep } from './utils'
-import { WALLETS } from './persist'
+import { getProxy, getProxyAgent, random, sleep } from './utils'
+import { CONFIG, WALLETS } from './persist'
 import { ethers } from 'ethers'
 import axios from 'axios'
 
@@ -29,7 +29,7 @@ export async function bypass(threads: number, worker: (wallet: ethers.Wallet, in
         }
         await worker(task.wallet, task.index)
         if (task.isLast === false) {
-          await sleep(60)
+          await sleep(random(...CONFIG.sleep.betweenWallet))
         }
       } else {
         break

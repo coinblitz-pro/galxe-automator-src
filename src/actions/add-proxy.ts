@@ -1,19 +1,12 @@
-import readline from 'readline'
+import readline from 'node:readline/promises'
 import { saveProxiesSync } from '../system/persist'
 
 export async function addProxy() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 
-  const answer = await new Promise<string>(resolve => rl.question(
-    `\nВведите прокси через запятую и нажмите enter (текущий файл proxies.txt будет перезаписан)\nФормат прокси: user:password@ip:port\n\n`,
-    (answer) => {
-      rl.close()
-      resolve(answer)
-    })
-  )
-
+  const answer = await rl.question(`\n  Введите прокси через запятую (текущий файл proxies.txt будет перезаписан)\n  Формат прокси: user:password@ip:port\n`)
   const proxies = answer.split(',').map(p => p.trim()).filter(p => p)
   saveProxiesSync(proxies)
 
-  console.log(`\nСохранено ${proxies.length} прокси\n`)
+  console.log(`\n  Сохранено ${proxies.length} прокси\n`)
 }

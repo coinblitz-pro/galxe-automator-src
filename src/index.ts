@@ -1,8 +1,4 @@
 import { cli } from './cli'
-import { printCoinblitzBanner, printSybildersBanner, printTitle } from './system/banner'
+import { bootstrap } from './system/bootstrap'
 
-printCoinblitzBanner()
-printSybildersBanner()
-printTitle()
-
-cli()
+bootstrap().then(() => cli())

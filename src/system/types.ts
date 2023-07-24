@@ -33,3 +33,18 @@ export type Geetest4Captcha = {
 
 export type Geetest4CaptchaResponse = TwoCaptchaResponse<Geetest4Captcha>
 
+export type Config = {
+  license: string
+  twoCaptcha: string
+  banner: boolean
+  bsc: {
+    rpc: string
+    gasPrice: number
+    waitTx: boolean
+  }
+  sleep: {
+    betweenGalxeRequest: [ number, number ]
+    betweenWallet: [ number, number ]
+    beforeThread: [ number, number ]
+  }
+}
